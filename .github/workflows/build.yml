@@ -57,7 +57,12 @@ jobs:
           java-version: "17"
 
       - name: Set up Android SDK
-        uses: android-actions/setup-android@v3
+        shell: bash
+        run: |
+          SDK="${ANDROID_HOME:-$ANDROID_SDK_ROOT}"
+          echo "Using preinstalled Android SDK at $SDK"
+          yes | "$SDK/cmdline-tools/latest/bin/sdkmanager" --licenses > /dev/null || true
+          "$SDK/cmdline-tools/latest/bin/sdkmanager" "platforms;android-35" "build-tools;35.0.0" > /dev/null
 
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
@@ -119,7 +124,6 @@ jobs:
             echo "- Unit tests: **${{ steps.tests.outcome }}**"
           } >> "$GITHUB_STEP_SUMMARY"
 
-      # Optional: signed release bundle for Google Play (runs only if these secrets exist)
       - name: Build signed release bundle (optional)
         env:
           KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
